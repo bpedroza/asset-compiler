@@ -1,0 +1,36 @@
+{
+    "name": "bpedroza/asset-compiler",
+    "description": "An asset compiler for php. Compile multiple javascript or css files into a single file.",
+    "keywords": ["asset", "loader", "compiler", "laravel"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bryan Pedroza"
+        }
+    ],
+    "type": "project",
+    "require": {
+        "php": ">=5.5.9"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~5.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bpedroza\\AssetCompiler\\": "src/AssetCompiler"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.0"
+        }
+    }
+}
