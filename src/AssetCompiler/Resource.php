@@ -29,6 +29,8 @@ namespace Bpedroza\AssetCompiler;
 use Bpedroza\AssetCompiler\Configuration;
 use Bpedroza\AssetCompiler\Exceptions\UndefinedTypeException;
 use Bpedroza\AssetCompiler\Exceptions\ResourceMissingException;
+use Bpedroza\AssetCompiler\ResourceTypes\TypeCss;
+use Bpedroza\AssetCompiler\ResourceTypes\TypeJs;
 
 /**
  * The resource is a file we will use this class to represent each one 
@@ -42,7 +44,7 @@ class Resource
     /**
      * An array of types we will allow to be used
      */
-    const TYPES = ['js', 'css'];
+    const TYPES = [TypeJs::TYPE, TypeCss::TYPE];
 
     /**
      * The configuration object, we will need it to generate file information

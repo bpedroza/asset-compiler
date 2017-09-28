@@ -29,6 +29,8 @@ namespace Bpedroza\AssetCompiler;
 use Bpedroza\AssetCompiler\Configuration;
 use Bpedroza\AssetCompiler\Resource;
 use Bpedroza\AssetCompiler\CompiledResource;
+use Bpedroza\AssetCompiler\ResourceTypes\TypeCss;
+use Bpedroza\AssetCompiler\ResourceTypes\TypeJs;
 
 /**
  * Use this tool to build js and css files compiled as one to avoid having too many assets to load
@@ -67,6 +69,30 @@ class AssetCompiler
     }
 
     /**
+     * Function to take an js file path relative to public/js and build the script tag for it with cache buster
+     * @param string $file - the file to generate the script tag for
+     * @param array $attrs - add attributes to the tag
+     * @return string - the script tag for the compiled js file
+     */
+    public function getScript($file, $attrs = [])
+    {
+        $Resource = new Resource($this->config, TypeJs::TYPE, $file);
+        return '<script src="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' />';
+    }
+
+    /**
+     * Function to take an js file path relative to public/js and build the script tag for it with cache buster
+     * @param string $file - the file to generate the script tag for
+     * @param array $attrs - add attributes to the tag
+     * @return string - the script tag for the compiled js file
+     */
+    public function getStyle($file, $attrs = [])
+    {
+        $Resource = new Resource($this->config, TypeCss::TYPE, $file);
+        return '<link href="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
+    }
+
+    /**
      * Take an array of js file paths relative to the public/js folder
      * and combine them into a single file named with the last modified time of the 
      * most recent modified file to avoid caching.
@@ -77,35 +103,14 @@ class AssetCompiler
      */
     public function getScriptsMulti(array $files, string $outFile, $attrs = [])
     {
-        if ($this->config->debug()) {
-            $output = '';
-            foreach ($files as $file) {
-                $output .= $this->getScript($file) . "\n";
-            }
-            return $output;
+        $type = TypeJs::TYPE;
+        if ( ($debugOutput = $this->getMultiOutputForDebug($files, $type) ) !== false){
+            return $debugOutput;
         }
-        
-        $CompiledResource = new CompiledResource($this->config, 'js', $outFile);
-        $resources = $this->getResourcesFromFileArray($files, 'js');
-        $lastModTime = $this->getLastModTimeOfFiles($resources);
 
-        if (( $CompiledResource->modTime() === 0 || $lastModTime > $CompiledResource->modTime() ) && count($resources)) {
-            $this->generateOutFile($CompiledResource->absolutePath(), $resources, "\n" . ';');
-        }
+        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $type, $outFile);
 
         return '<script src="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . '/>';
-    }
-
-    /**
-     * Function to take an js file path relative to public/js and build the script tag for it with cache buster
-     * @param string $file - the file to generate the script tag for
-     * @param array $attrs - add attributes to the tag
-     * @return string - the script tag for the compiled js file
-     */
-    public function getScript($file, $attrs = [])
-    {
-        $Resource = new Resource($this->config, 'js', $file);
-        return '<script src="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' />';
     }
 
     /**
@@ -119,35 +124,54 @@ class AssetCompiler
      */
     public function getStylesMulti(array $files, string $outFile, $attrs = [])
     {
-        if ($this->config->debug()) {
-            $output = '';
-            foreach ($files as $file) {
-                $output .= $this->getStyle($file) . "\n";
-            }
-            return $output;
+        $type = TypeCss::TYPE;
+        if ( ($debugOutput = $this->getMultiOutputForDebug($files, $type) ) !== false){
+            return $debugOutput;
         }
-        
-        $CompiledResource = new CompiledResource($this->config, 'css', $outFile);
-        $resources = $this->getResourcesFromFileArray($files, 'css');
+
+        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $type, $outFile);
+
+        return '<link href="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';
+    }
+    
+    /**
+     * create a compiled file and return the compiled resource
+     * @param array $files
+     * @param string $type
+     * @param string $outFile
+     * @return [CompiledResource, int]
+     */
+    protected function createCompiledFile($files, $type, $outFile)
+    {
+        $CompiledResource = new CompiledResource($this->config, $type, $outFile);
+        $resources = $this->getResourcesFromFileArray($files, $type);
         $lastModTime = $this->getLastModTimeOfFiles($resources);
 
         if (( $CompiledResource->modTime() === 0 || $lastModTime > $CompiledResource->modTime() ) && count($resources)) {
             $this->generateOutFile($CompiledResource->absolutePath(), $resources, "\n" . ';');
         }
-
-        return '<link href="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';
+        
+        return [$CompiledResource, $lastModTime];
     }
 
     /**
-     * Function to take an js file path relative to public/js and build the script tag for it with cache buster
-     * @param string $file - the file to generate the script tag for
-     * @param array $attrs - add attributes to the tag
-     * @return string - the script tag for the compiled js file
+     * Gets the output for multi call when debug is on
+     * @param array $files
+     * @param string $type
+     * @return boolean|string
      */
-    public function getStyle($file, $attrs = [])
+    protected function getMultiOutputForDebug($files, $type)
     {
-        $Resource = new Resource($this->config, 'css', $file);
-        return '<link href="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
+        if (!$this->config->debug()) {
+            return false;
+        }
+
+        $output = '';
+        foreach ($files as $file) {
+            $func = $type == TypeJs::TYPE ? 'getScript' : 'getStyle';
+            $output .= $this->{$func}($file) . "\n";
+        }
+        return $output;
     }
 
     /**
@@ -198,7 +222,7 @@ class AssetCompiler
             file_put_contents($outFilePath, $separator . file_get_contents($Resource->absolutePath()), FILE_APPEND);
         }
     }
-    
+
     /**
      * Given an array of filenames, will return an array of resources
      * @param array $files
@@ -208,11 +232,11 @@ class AssetCompiler
     protected function getResourcesFromFileArray($files = [], $type)
     {
         $resources = [];
-        
-        foreach($files as $file) {
+
+        foreach ($files as $file) {
             $resources[] = new Resource($this->config, $type, $file);
         }
-        
+
         return $resources;
     }
 
