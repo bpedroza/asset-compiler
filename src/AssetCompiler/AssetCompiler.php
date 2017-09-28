@@ -1,4 +1,5 @@
 <?php
+
 /*
  * The MIT License
  *
@@ -22,9 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 namespace Bpedroza\AssetCompiler;
 
 use Bpedroza\AssetCompiler\Exceptions\ResourceMissingException;
+use Bpedroza\AssetCompiler\Configuration;
+
 /**
  * Use this tool to build js and css files compiled as one to avoid having too many assets to load
  * this tool will also put a cache buster string on all compiled assets
@@ -34,60 +38,31 @@ use Bpedroza\AssetCompiler\Exceptions\ResourceMissingException;
 class AssetCompiler
 {
 
-    private $cssPath = 'css';
-    private $jsPath = 'js';
-    private $rootPath, $httpRootPath;
-    private $compiledFolder = 'compiled';
-    private $debug = false;
-    
+    /**
+     * The configuration object the stores all the config values
+     * @var Bpedroza\AssetCompiler\Configuration 
+     */
+    protected $config;
+
+    /**
+     * Set the major paths for the class
+     * @param string $rootPath - full path to resources
+     * @param string $httpRootPath - http path to resources
+     * @throws \Exception
+     */
     public function __construct($rootPath, $httpRootPath = null)
     {
-        $this->rootPath = rtrim($rootPath,'\/');
-        if(!is_dir($rootPath)) {
-            throw new \Exception('Specified root directory does not exist.');
-        }
-        
-        $this->httpRootPath = $httpRootPath === null ? '' : rtrim($httpRootPath, '\/');
+        $this->config = new Configuration();
+        $this->config->rootPath($rootPath)->httpPath($httpRootPath);
     }
 
     /**
-     * Path relative to root path where your css files live
-     * @param string $path - the path
-     * @return mixed - $this or the current cssPath
+     * Return the configuration object
+     * @return Bpedroza\AssetCompiler\Configuration 
      */
-    public function cssPath($path = null)
+    public function config()
     {
-        return $this->configValue('cssPath', trim($path,'\/'));
-    }
-
-    /**
-     * Path relative to root path where your js files live
-     * @param string $path - the path
-     * @return mixed - $this or the current jsPath
-     */
-    public function jsPath($path = null)
-    {
-        return $this->configValue('jsPath', trim($path,'\/'));
-    }
-
-    /**
-     * Name of folder that will be created in both js and css folders for compiled files
-     * @param string $folder - the folder name
-     * @return mixed - $this or the current compiled folder name
-     */
-    public function compiledFolder($folder = null)
-    {
-        return $this->configValue('compiledFolder', $folder);
-    }
-    
-    /**
-     * Set or get config value for debug. When in debug, we won't compile items.
-     * @param bool $debug
-     * @return bool
-     */
-    public function debug($debug = null)
-    {
-       return $this->configValue('debug', $debug); 
+        return $this->config;
     }
 
     /**
@@ -108,15 +83,15 @@ class AssetCompiler
         } catch (ResourceMissingException $e) {
             $outFileModTime = 0;
         }
-        
+
         list($paths, $lastModTime) = $this->getLastModTimeAndPathsOfFiles($files);
 
         if (( $outFileModTime === 0 || $lastModTime > $outFileModTime ) && count($paths)) {
             $this->generateOutFile($outFilePath, $paths, "\n" . ';');
         }
-        if ($this->debug) {
+        if ($this->config->debug()) {
             foreach ($paths as $path) {
-                $relPath = str_replace($this->rootPath . '/js/', '', $path);
+                $relPath = str_replace($this->config->rootPath() . '/js/', '', $path);
                 $output .= $this->getScript($relPath) . "\n";
             }
         } else {
@@ -134,8 +109,8 @@ class AssetCompiler
      */
     public function getScript($file, $attrs = [])
     {
-        $outFileModTime = $this->filemtimeOrException($this->rootPath . '/' . $this->jsPath . '/' . $file);
-        $httpPath = $this->httpRootPath . '/' . $this->jsPath . '/' . $file;
+        $outFileModTime = $this->filemtimeOrException($this->config->rootPath() . '/' . $this->config()->jsPath() . '/' . $file);
+        $httpPath = $this->config->httpPath() . '/' . $this->config->jsPath() . '/' . $file;
         return '<script src="' . $httpPath . '?v=' . $outFileModTime . '"' . $this->generateAttributesString($attrs) . ' />';
     }
 
@@ -159,9 +134,9 @@ class AssetCompiler
         }
         list($paths, $lastModTime) = $this->getLastModTimeAndPathsOfFiles($files, 'css');
 
-        if ($this->debug) {
+        if ($this->config->debug()) {
             foreach ($paths as $path) {
-                $relPath = str_replace($this->rootPath . '/css/', '', $path);
+                $relPath = str_replace($this->config->rootPath() . '/css/', '', $path);
                 $output .= $this->getStyle($relPath, $attrs) . "\n";
             }
         } else {
@@ -181,8 +156,8 @@ class AssetCompiler
      */
     public function getStyle($file, $attrs = [])
     {
-        $outFileModTime = $this->filemtimeOrException($this->rootPath . '/' . $this->cssPath . '/' . $file);
-        $httpPath = $this->httpRootPath . '/' . $this->cssPath . '/' . $file;
+        $outFileModTime = $this->filemtimeOrException($this->config->rootPath() . '/' . $this->config->cssPath() . '/' . $file);
+        $httpPath = $this->config->httpPath() . '/' . $this->config->cssPath() . '/' . $file;
         return '<link href="' . $httpPath . '?v=' . $outFileModTime . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
     }
 
@@ -191,7 +166,7 @@ class AssetCompiler
      * @param array $attrs - an array of attributes where key is the attribute name and value is the value
      * @return string
      */
-    private function generateAttributesString($attrs)
+    protected function generateAttributesString($attrs)
     {
         if (empty($attrs)) {
             return '';
@@ -210,12 +185,12 @@ class AssetCompiler
      * @param string $type - the type (and path) (js | css)
      * @return array - an array with the paths array and the last modified time
      */
-    private function getLastModTimeAndPathsOfFiles($files, $type = 'js')
+    protected function getLastModTimeAndPathsOfFiles($files, $type = 'js')
     {
         $lastModTime = 0;
         $paths = [];
         foreach ($files as $k => $file) {
-            $paths[$k] = $this->rootPath . '/' . $this->configValue($type . 'Path') . '/' . $file;
+            $paths[$k] = $this->config->rootPath() . '/' . $this->config->{$type . 'Path'}() . '/' . $file;
             $mTime = $this->filemtimeOrException($paths[$k]);
             $lastModTime = $mTime > $lastModTime ? $mTime : $lastModTime;
             if ($mTime === 0) {
@@ -232,7 +207,7 @@ class AssetCompiler
      * @param array $paths - an array of full paths to files to compile
      * @param string $separator - optional string to separate files with
      */
-    private function generateOutFile($outFilePath, $paths, $separator)
+    protected function generateOutFile($outFilePath, $paths, $separator)
     {
         file_put_contents($outFilePath, '');
         foreach ($paths as $path) {
@@ -246,14 +221,14 @@ class AssetCompiler
      * @param bool $relative - get the relative or absolute path
      * @return the full compiled output path
      */
-    private function getCompiledPath($type = 'js', $relative = false)
+    protected function getCompiledPath($type = 'js', $relative = false)
     {
-        $compiledPath = ($relative ? '' : $this->rootPath ) . '/' . $this->configValue($type . 'Path') . '/';
-        if (!strlen($this->compiledFolder)) {
+        $compiledPath = ($relative ? '' : $this->config->rootPath() ) . '/' . $this->config->{$type . 'Path'}() . '/';
+        if (!strlen($this->config->compiledFolder())) {
             return $compiledPath;
         }
         // Make sure there's no leading or trailing slashes.
-        $compiledFolder = trim($this->compiledFolder, '\/');
+        $compiledFolder = trim($this->config->compiledFolder(), '\/');
         // Get all directories, account for accidental double slashes.
         $folders = array_filter(explode('/', str_replace('\\', '/', $compiledFolder)));
         // Loop though and create directories if we need to.
@@ -272,28 +247,17 @@ class AssetCompiler
      * @param type $path
      * @return int
      */
-    private function filemtimeOrException($path)
+    protected function filemtimeOrException($path)
     {
         if (file_exists($path)) {
             return filemtime($path);
         }
-        throw new ResourceMissingException($path);
-    }
 
-    /**
-     * Set/Get configuration values 
-     * @param string $variable - the name of the instance variable
-     * @param mixed $value - the new value
-     * @return mixed - the current value or $this
-     */
-    private function configValue($variable, $value = null)
-    {
-        if ($value === null) {
-            return $this->{$variable};
+        if ($this->config->ignoreMissing()) {
+            return 0;
         }
 
-        $this->{$variable} = $value;
-        return $this;
+        throw new ResourceMissingException($path);
     }
 
 }

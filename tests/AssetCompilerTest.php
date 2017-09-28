@@ -17,7 +17,7 @@ class AssetCompilerTest extends TestCase
         $this->AssetCompiler = new AssetCompiler($this->rootPath);
         $this->removeFolders();
     }
-    
+
     public function tearDown()
     {
         $this->removeFolders();
@@ -34,7 +34,7 @@ class AssetCompilerTest extends TestCase
 
     public function test_get_single_css_file_alternate_folder()
     {
-        $this->AssetCompiler->cssPath('alternatecssfoldername');
+        $this->AssetCompiler->config()->cssPath('alternatecssfoldername');
         $actual = $this->AssetCompiler->getStyle('test3.css');
         $fileTime = filemtime(__DIR__ . '/testresources/alternatecssfoldername/test3.css');
         $expected = '<link href="/alternatecssfoldername/test3.css?v=' . $fileTime . '" rel="stylesheet" />';
@@ -43,7 +43,7 @@ class AssetCompilerTest extends TestCase
 
     public function test_get_single_css_file_alternate_folder_cleans_slashes()
     {
-        $this->AssetCompiler->cssPath('/alternatecssfoldername\\');
+        $this->AssetCompiler->config()->cssPath('/alternatecssfoldername\\');
         $actual = $this->AssetCompiler->getStyle('test3.css');
         $fileTime = filemtime(__DIR__ . '/testresources/alternatecssfoldername/test3.css');
         $expected = '<link href="/alternatecssfoldername/test3.css?v=' . $fileTime . '" rel="stylesheet" />';
@@ -70,55 +70,55 @@ class AssetCompilerTest extends TestCase
         $filePath = __DIR__ . '/testresources/css/test1.css';
         touch($filePath);
         $fileTime = filemtime($filePath);
-        
+
         $actual = $this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], $compiledName);
-        $expected = '<link href="/css/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
-        
-        $this->assertFileExists($this->rootPath . 'css/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName);
+        $expected = '<link href="/css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
+
+        $this->assertFileExists($this->rootPath . 'css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
         $this->assertEquals($expected, $actual);
     }
-    
+
     public function test_get_multi_css_file_alternate_compiled_path()
     {
         $compiledName = 'compiledCss.css';
         $filePath = __DIR__ . '/testresources/css/test1.css';
         touch($filePath);
         $fileTime = filemtime($filePath);
-        
-        $this->AssetCompiler->compiledFolder('alternateCompiledFolder');
+
+        $this->AssetCompiler->config()->compiledFolder('alternateCompiledFolder');
         $actual = $this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], $compiledName);
         $expected = '<link href="/css/alternateCompiledFolder/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
-        
+
         $this->assertFileExists($this->rootPath . 'css/alternateCompiledFolder/' . $compiledName);
         $this->assertEquals($expected, $actual);
     }
-    
+
     public function test_get_multi_css_file_alternate_css_path()
     {
         $compiledName = 'compiledCss.css';
         $filePath = __DIR__ . '/testresources/alternatecssfoldername/test3.css';
         touch($filePath);
         $fileTime = filemtime($filePath);
-        
-        $this->AssetCompiler->cssPath('alternatecssfoldername');
+
+        $this->AssetCompiler->config()->cssPath('alternatecssfoldername');
         $actual = $this->AssetCompiler->getStylesMulti(['test3.css', 'test4.css'], $compiledName);
-        $expected = '<link href="/alternatecssfoldername/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
-        
-        $this->assertFileExists($this->rootPath . 'alternatecssfoldername/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName);
+        $expected = '<link href="/alternatecssfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
+
+        $this->assertFileExists($this->rootPath . 'alternatecssfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
         $this->assertEquals($expected, $actual);
     }
 
     public function test_get_multi_css_file_contents()
     {
         $compiledName = 'compiledCss.css';
-        $filePath = $this->rootPath . 'css/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName;
+        $filePath = $this->rootPath . 'css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName;
         $this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], $compiledName);
-        
+
         $this->assertFileExists($filePath);
-        
+
         $actual = file_get_contents($filePath);
         $expected = "\n" . ';' . 'body {background:#fff;}' . "\n" . ';' . 'div.full {width:100%;}';
-        
+
         $this->assertEquals($expected, $actual);
     }
 
@@ -133,7 +133,7 @@ class AssetCompilerTest extends TestCase
     {
         $compiledName = 'compiledCss.css';
         $files = ['test1.css', 'test2.css'];
-        $this->AssetCompiler->debug(true);
+        $this->AssetCompiler->config()->debug(true);
         $actual = $this->AssetCompiler->getStylesMulti($files, $compiledName);
 
         $expected = '';
@@ -141,10 +141,10 @@ class AssetCompilerTest extends TestCase
             $fileTime = filemtime(__DIR__ . '/testresources/css/' . $file);
             $expected .= '<link href="/css/' . $file . '?v=' . $fileTime . '" rel="stylesheet" />' . "\n";
         }
-        
+
         $this->assertEquals($expected, $actual);
     }
-    
+
     // Start JS
     public function test_get_single_js_file()
     {
@@ -156,7 +156,7 @@ class AssetCompilerTest extends TestCase
 
     public function test_get_single_js_file_alternate_folder()
     {
-        $this->AssetCompiler->jsPath('alternatejsfoldername');
+        $this->AssetCompiler->config()->jsPath('alternatejsfoldername');
         $actual = $this->AssetCompiler->getScript('test3.js');
         $fileTime = filemtime(__DIR__ . '/testresources/alternatejsfoldername/test3.js');
         $expected = '<script src="/alternatejsfoldername/test3.js?v=' . $fileTime . '" />';
@@ -165,7 +165,7 @@ class AssetCompilerTest extends TestCase
 
     public function test_get_single_js_file_alternate_folder_cleans_slashes()
     {
-        $this->AssetCompiler->jsPath('/alternatejsfoldername\\');
+        $this->AssetCompiler->config()->jsPath('/alternatejsfoldername\\');
         $actual = $this->AssetCompiler->getScript('test3.js');
         $fileTime = filemtime(__DIR__ . '/testresources/alternatejsfoldername/test3.js');
         $expected = '<script src="/alternatejsfoldername/test3.js?v=' . $fileTime . '" />';
@@ -192,55 +192,55 @@ class AssetCompilerTest extends TestCase
         $filePath = __DIR__ . '/testresources/js/test1.js';
         touch($filePath);
         $fileTime = filemtime($filePath);
-        
+
         $actual = $this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], $compiledName);
-        $expected = '<script src="/js/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" />';
-        
-        $this->assertFileExists($this->rootPath . 'js/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName);
+        $expected = '<script src="/js/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" />';
+
+        $this->assertFileExists($this->rootPath . 'js/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
         $this->assertEquals($expected, $actual);
     }
-    
+
     public function test_get_multi_js_file_alternate_compiled_path()
     {
         $compiledName = 'compiledJs.js';
         $filePath = __DIR__ . '/testresources/js/test1.js';
         touch($filePath);
         $fileTime = filemtime($filePath);
-        
-        $this->AssetCompiler->compiledFolder('alternateCompiledFolder');
+
+        $this->AssetCompiler->config()->compiledFolder('alternateCompiledFolder');
         $actual = $this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], $compiledName);
         $expected = '<script src="/js/alternateCompiledFolder/' . $compiledName . '?v=' . $fileTime . '" />';
-        
+
         $this->assertFileExists($this->rootPath . 'js/alternateCompiledFolder/' . $compiledName);
         $this->assertEquals($expected, $actual);
     }
-    
+
     public function test_get_multi_js_file_alternate_js_path()
     {
         $compiledName = 'compiledJs.js';
         $filePath = __DIR__ . '/testresources/alternatejsfoldername/test3.js';
         touch($filePath);
         $fileTime = filemtime($filePath);
-        
-        $this->AssetCompiler->jsPath('alternatejsfoldername');
+
+        $this->AssetCompiler->config()->jsPath('alternatejsfoldername');
         $actual = $this->AssetCompiler->getScriptsMulti(['test3.js', 'test4.js'], $compiledName);
-        $expected = '<script src="/alternatejsfoldername/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" />';
-        
-        $this->assertFileExists($this->rootPath . 'alternatejsfoldername/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName);
+        $expected = '<script src="/alternatejsfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" />';
+
+        $this->assertFileExists($this->rootPath . 'alternatejsfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
         $this->assertEquals($expected, $actual);
     }
 
     public function test_get_multi_js_file_contents()
     {
         $compiledName = 'compiledJs.js';
-        $filePath = $this->rootPath . 'js/' . $this->AssetCompiler->compiledFolder() . '/' . $compiledName;
+        $filePath = $this->rootPath . 'js/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName;
         $this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], $compiledName);
-        
+
         $this->assertFileExists($filePath);
-        
+
         $actual = file_get_contents($filePath);
         $expected = "\n" . ';' . 'var message = "Hello World";' . "\n" . ';' . 'function doSomething() { return 2+2; }';
-        
+
         $this->assertEquals($expected, $actual);
     }
 
@@ -255,7 +255,7 @@ class AssetCompilerTest extends TestCase
     {
         $compiledName = 'compiledJs.js';
         $files = ['test1.js', 'test2.js'];
-        $this->AssetCompiler->debug(true);
+        $this->AssetCompiler->config()->debug(true);
         $actual = $this->AssetCompiler->getScriptsMulti($files, $compiledName);
 
         $expected = '';
@@ -263,32 +263,32 @@ class AssetCompilerTest extends TestCase
             $fileTime = filemtime(__DIR__ . '/testresources/js/' . $file);
             $expected .= '<script src="/js/' . $file . '?v=' . $fileTime . '" />' . "\n";
         }
-        
+
         $this->assertEquals($expected, $actual);
     }
-    
+
     // Remove folders created by the test
     private function removeFolders()
     {
         $directories = [
-             'css/compiled',
-             'js/compiled',
-             'alternatecssfoldername/compiled',
-             'alternamejsfoldername/compiled',
-             'css/alternatecompiledfolder',
-             'js/alternatecompiledfolder',
-             'alternatecssfoldername/alternatecompiledfolder',
-             'alternamejsfoldername/alternatecompiledfolder',
+            'css/compiled',
+            'js/compiled',
+            'alternatecssfoldername/compiled',
+            'alternamejsfoldername/compiled',
+            'css/alternatecompiledfolder',
+            'js/alternatecompiledfolder',
+            'alternatecssfoldername/alternatecompiledfolder',
+            'alternamejsfoldername/alternatecompiledfolder',
         ];
-        
-        foreach($directories as $directory) {
+
+        foreach ($directories as $directory) {
             $dir = $this->rootPath . $directory;
-            if(!is_dir($dir)) {
+            if (!is_dir($dir)) {
                 continue;
             }
-            $files = array_diff(scandir($dir), array('.','..'));
+            $files = array_diff(scandir($dir), array('.', '..'));
             foreach ($files as $file) {
-              unlink("$dir/$file");
+                unlink("$dir/$file");
             }
             rmdir($dir);
         }
