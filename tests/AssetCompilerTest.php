@@ -274,11 +274,11 @@ class AssetCompilerTest extends TestCase
             'css/compiled',
             'js/compiled',
             'alternatecssfoldername/compiled',
-            'alternamejsfoldername/compiled',
+            'alternatejsfoldername/compiled',
             'css/alternatecompiledfolder',
             'js/alternatecompiledfolder',
             'alternatecssfoldername/alternatecompiledfolder',
-            'alternamejsfoldername/alternatecompiledfolder',
+            'alternatejsfoldername/alternatecompiledfolder',
         ];
 
         foreach ($directories as $directory) {

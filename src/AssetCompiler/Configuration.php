@@ -135,7 +135,7 @@ class Configuration
      */
     public function compiledFolder($folder = null)
     {
-        return $this->configValue('compiledFolder', $folder);
+        return $this->cleanConfigValue('compiledFolder', $folder);
     }
 
     /**
