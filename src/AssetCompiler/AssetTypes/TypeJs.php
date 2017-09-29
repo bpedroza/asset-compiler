@@ -67,16 +67,16 @@ class TypeJs implements TypeInterface
      * @param string $filename
      * @return \Bpedroza\AssetCompiler\Assets\CompiledJssAsset
      */
-    public function getCompiledAsset($filename)
+    public function getCompiledAsset($filename, $filesToCompile)
     {
-        return new CompiledJsAsset($this->config, $filename);
+        return new CompiledJsAsset($this->config, $filename, $this->getAssetArrayFromFilenames($filesToCompile));
     }
 
     /**
      * Get an array of JsAssets from filenames
      * @param string[] $filenames
      */
-    public function getAssetArrayFromFilenames($filenames)
+    protected function getAssetArrayFromFilenames($filenames)
     {
         $assets = [];
         foreach($filenames as $filename) {

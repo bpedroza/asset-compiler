@@ -68,16 +68,16 @@ class TypeCss implements TypeInterface
      * @param string $filename
      * @return \Bpedroza\AssetCompiler\Assets\CompiledCssAsset
      */
-    public function getCompiledAsset($filename)
+    public function getCompiledAsset($filename, $filesToCompile)
     {
-        return new CompiledCssAsset($this->config, $filename);
+        return new CompiledCssAsset($this->config, $filename, $this->getAssetArrayFromFilenames($filesToCompile));
     }
     
     /**
      * Get an array of JsAssets from filenames
      * @param string[] $filenames
      */
-    public function getAssetArrayFromFilenames($filenames)
+    protected function getAssetArrayFromFilenames($filenames)
     {
         $assets = [];
         foreach($filenames as $filename) {

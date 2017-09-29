@@ -45,12 +45,5 @@ Interface TypeInterface
      * @param type $filename
      * @return BaseCompiledAsset
      */
-    public function getCompiledAsset($filename);
-    
-    /**
-     * Get an array of BaseAssets given an array of filenames
-     * @param string[] $filenames
-     * @return BaseAsset[]
-     */
-    public function getAssetArrayFromFilenames($filenames);
+    public function getCompiledAsset($filename, $filesToCompile);
 }

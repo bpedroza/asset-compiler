@@ -29,7 +29,8 @@ namespace Bpedroza\AssetCompiler;
 use Bpedroza\AssetCompiler\Configuration;
 use Bpedroza\AssetCompiler\AssetTypes\TypeCss;
 use Bpedroza\AssetCompiler\AssetTypes\TypeJs;
-use \Bpedroza\AssetCompiler\AssetTypes\TypeInterface;
+use Bpedroza\AssetCompiler\AssetTypes\TypeInterface;
+use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
 
 /**
  * Use this tool to build js and css files compiled as one to avoid having too many assets to load
@@ -109,9 +110,9 @@ class AssetCompiler
             return $debugOutput;
         }
 
-        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $Type, $outFile);
+        $CompiledResource = $this->createCompiledFile($files, $Type, $outFile);
 
-        return '<script src="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . '/>';
+        return '<script src="' . $CompiledResource->httpPath() . '?v=' . $CompiledResource->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '/>';
     }
 
     /**
@@ -130,9 +131,9 @@ class AssetCompiler
             return $debugOutput;
         }
 
-        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $Type, $outFile);
+        $CompiledResource = $this->createCompiledFile($files, $Type, $outFile);
 
-        return '<link href="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';
+        return '<link href="' . $CompiledResource->httpPath() . '?v=' . $CompiledResource->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';
     }
 
     /**
@@ -140,19 +141,17 @@ class AssetCompiler
      * @param array $files
      * @param \Bpedroza\AssetCompiler\AssetTypes\TypeInterface $Type
      * @param string $outFile
-     * @return [CompiledResource, int]
+     * @return \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset
      */
     protected function createCompiledFile($files, TypeInterface $Type, $outFile)
     {
-        $CompiledResource = $Type->getCompiledAsset($outFile);
-        $resources = $Type->getAssetArrayFromFilenames($files);
-        $lastModTime = $this->getLastModTimeOfFiles($resources);
+        $CompiledAsset = $Type->getCompiledAsset($outFile, $files);
 
-        if (( $CompiledResource->modTime() === 0 || $lastModTime > $CompiledResource->modTime() ) && count($resources)) {
-            $this->generateOutFile($CompiledResource->absolutePath(), $resources, "\n" . ';');
+        if ($CompiledAsset->needsToBeReCompiled()) {
+            $this->generateOutFile($CompiledAsset);
         }
 
-        return [$CompiledResource, $lastModTime];
+        return $CompiledAsset;
     }
 
     /**
@@ -194,33 +193,15 @@ class AssetCompiler
     }
 
     /**
-     * Method to get the file paths and last modified time of a set of files
-     * @param Resource[] $resources - an array of the file resources
-     * @param string $type - the type (and path) (js | css)
-     * @return array - an array with the paths array and the last modified time
-     */
-    protected function getLastModTimeOfFiles($resources)
-    {
-        $lastModTime = 0;
-        foreach ($resources as $Resource) {
-            $mTime = $Resource->modTime();
-            $lastModTime = $mTime > $lastModTime ? $mTime : $lastModTime;
-        }
-
-        return $lastModTime;
-    }
-
-    /**
      * Method to generate the output file
-     * @param string $outFilePath - the full path to the output file
-     * @param Resource[] $resources - an array of Resources to compile
-     * @param string $separator - optional string to separate files with
+     * @param \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset $CompiledAsset - the compiled asset object
      */
-    protected function generateOutFile($outFilePath, $resources, $separator)
+    protected function generateOutFile(BaseCompiledAsset $CompiledAsset)
     {
-        file_put_contents($outFilePath, '');
-        foreach ($resources as $Resource) {
-            file_put_contents($outFilePath, $separator . file_get_contents($Resource->absolutePath()), FILE_APPEND);
+        $separator = "\n" . ';';
+        file_put_contents($CompiledAsset->absolutePath(), '');
+        foreach ($CompiledAsset->getAssets() as $Asset) {
+            file_put_contents($CompiledAsset->absolutePath(), $separator . file_get_contents($Asset->absolutePath()), FILE_APPEND);
         }
     }
 

@@ -41,18 +41,65 @@ abstract class BaseCompiledAsset extends BaseAsset
      * @var string 
      */
     protected $folderPath;
-
+    
     /**
-     * Sets the relative path for this file
-     * @return \Bpedroza\AssetCompiler\Resource
+     * An array of all the assets to cimpile in this asset
+     * @var \Bpedroza\AssetCompiler\Assets\BaseAsset[] 
      */
-    protected function setRelativePath()
-    {
-        $this->setFolderPath();
-        $this->relativePath = '/' . $this->folderPath . '/' . $this->filename;
-        return $this;
-    }
+    protected $assets = [];
+    
+    /**
+     * The last modified time of the newest Asset in the Assets array
+     * @var int
+     */
+    protected $lastModTimeNewestAsset = 0;
 
+    public function __construct(\Bpedroza\AssetCompiler\Configuration $config, $filename, $assets)
+    {
+        $this->assets = $assets;
+        parent::__construct($config, $filename);
+        $this->setLastModTimeOfNewestAsset();
+    }
+    
+    /**
+     * Return all the assets to be compiled
+     * @return \Bpedroza\AssetCompiler\Assets\BaseAsset[] 
+     */
+    public function getAssets()
+    {
+        return $this->assets;
+    }
+    
+    /**
+     * Get the last modified time of the newest asset
+     * @return int
+     */
+    public function getLastModTimeOfNewestAsset()
+    {
+        return $this->lastModTimeNewestAsset;
+    }
+    
+    /**
+     * Does the asset need to be recompiled?
+     * @return boolean
+     */
+    public function needsToBeRecompiled()
+    {
+        return count($this->assets) && ( !$this->exists || $this->lastModTimeNewestAsset > $this->modTime() );
+    }
+    
+    /**
+     * Set the instance variable to store the last modified time of the newest file
+     */
+    protected function setLastModTimeOfNewestAsset()
+    {
+        $this->lastModTimeNewestAsset = 0;
+        foreach ($this->assets as $Asset) {
+            $mTime = $Asset->modTime();
+            $this->lastModTimeNewestAsset = $mTime > $this->lastModTimeNewestAsset ? $mTime : $this->lastModTimeNewestAsset;
+        }
+    }
+    
     /**
      * Sets the folder path for this file and creates missing folders
      * @return \Bpedroza\AssetCompiler\Resource
@@ -62,6 +109,17 @@ abstract class BaseCompiledAsset extends BaseAsset
         $rawFolderPath = $this->getTypeFolder() . '/' . $this->config->compiledFolder();
         $this->folderPath = str_replace('//', '/', str_replace('\\', '/', $rawFolderPath));
         $this->createFolders();
+        return $this;
+    }
+    
+    /**
+     * Sets the relative path for this file
+     * @return \Bpedroza\AssetCompiler\Resource
+     */
+    protected function setRelativePath()
+    {
+        $this->setFolderPath();
+        $this->relativePath = '/' . $this->folderPath . '/' . $this->filename;
         return $this;
     }
 
