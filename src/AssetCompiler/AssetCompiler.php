@@ -27,10 +27,9 @@
 namespace Bpedroza\AssetCompiler;
 
 use Bpedroza\AssetCompiler\Configuration;
-use Bpedroza\AssetCompiler\Resource;
-use Bpedroza\AssetCompiler\CompiledResource;
-use Bpedroza\AssetCompiler\ResourceTypes\TypeCss;
-use Bpedroza\AssetCompiler\ResourceTypes\TypeJs;
+use Bpedroza\AssetCompiler\AssetTypes\TypeCss;
+use Bpedroza\AssetCompiler\AssetTypes\TypeJs;
+use \Bpedroza\AssetCompiler\AssetTypes\TypeInterface;
 
 /**
  * Use this tool to build js and css files compiled as one to avoid having too many assets to load
@@ -76,7 +75,8 @@ class AssetCompiler
      */
     public function getScript($file, $attrs = [])
     {
-        $Resource = new Resource($this->config, TypeJs::TYPE, $file);
+        $Type = new TypeJs($this->config);
+        $Resource = $Type->getAsset($file);
         return '<script src="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' />';
     }
 
@@ -88,7 +88,8 @@ class AssetCompiler
      */
     public function getStyle($file, $attrs = [])
     {
-        $Resource = new Resource($this->config, TypeCss::TYPE, $file);
+        $Type = new TypeCss($this->config);
+        $Resource = $Type->getAsset($file);
         return '<link href="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
     }
 
@@ -103,12 +104,12 @@ class AssetCompiler
      */
     public function getScriptsMulti(array $files, string $outFile, $attrs = [])
     {
-        $type = TypeJs::TYPE;
-        if ( ($debugOutput = $this->getMultiOutputForDebug($files, $type) ) !== false){
+        $Type = new TypeJs($this->config);
+        if (($debugOutput = $this->getMultiOutputForDebug($files, $Type) ) !== false) {
             return $debugOutput;
         }
 
-        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $type, $outFile);
+        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $Type, $outFile);
 
         return '<script src="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . '/>';
     }
@@ -124,43 +125,43 @@ class AssetCompiler
      */
     public function getStylesMulti(array $files, string $outFile, $attrs = [])
     {
-        $type = TypeCss::TYPE;
-        if ( ($debugOutput = $this->getMultiOutputForDebug($files, $type) ) !== false){
+        $Type = new TypeCss($this->config);
+        if (($debugOutput = $this->getMultiOutputForDebug($files, $Type) ) !== false) {
             return $debugOutput;
         }
 
-        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $type, $outFile);
+        list($CompiledResource, $lastModTime) = $this->createCompiledFile($files, $Type, $outFile);
 
         return '<link href="' . $CompiledResource->httpPath() . '?v=' . $lastModTime . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';
     }
-    
+
     /**
      * create a compiled file and return the compiled resource
      * @param array $files
-     * @param string $type
+     * @param \Bpedroza\AssetCompiler\AssetTypes\TypeInterface $Type
      * @param string $outFile
      * @return [CompiledResource, int]
      */
-    protected function createCompiledFile($files, $type, $outFile)
+    protected function createCompiledFile($files, TypeInterface $Type, $outFile)
     {
-        $CompiledResource = new CompiledResource($this->config, $type, $outFile);
-        $resources = $this->getResourcesFromFileArray($files, $type);
+        $CompiledResource = $Type->getCompiledAsset($outFile);
+        $resources = $Type->getAssetArrayFromFilenames($files);
         $lastModTime = $this->getLastModTimeOfFiles($resources);
 
         if (( $CompiledResource->modTime() === 0 || $lastModTime > $CompiledResource->modTime() ) && count($resources)) {
             $this->generateOutFile($CompiledResource->absolutePath(), $resources, "\n" . ';');
         }
-        
+
         return [$CompiledResource, $lastModTime];
     }
 
     /**
      * Gets the output for multi call when debug is on
      * @param array $files
-     * @param string $type
+     * @param \Bpedroza\AssetCompiler\AssetTypes\TypeInterface $type
      * @return boolean|string
      */
-    protected function getMultiOutputForDebug($files, $type)
+    protected function getMultiOutputForDebug($files, TypeInterface $Type)
     {
         if (!$this->config->debug()) {
             return false;
@@ -168,7 +169,7 @@ class AssetCompiler
 
         $output = '';
         foreach ($files as $file) {
-            $func = $type == TypeJs::TYPE ? 'getScript' : 'getStyle';
+            $func = $Type instanceof TypeJs ? 'getScript' : 'getStyle';
             $output .= $this->{$func}($file) . "\n";
         }
         return $output;
@@ -221,23 +222,6 @@ class AssetCompiler
         foreach ($resources as $Resource) {
             file_put_contents($outFilePath, $separator . file_get_contents($Resource->absolutePath()), FILE_APPEND);
         }
-    }
-
-    /**
-     * Given an array of filenames, will return an array of resources
-     * @param array $files
-     * @param string $type - what type of resources are they?
-     * @return Resource[]
-     */
-    protected function getResourcesFromFileArray($files = [], $type)
-    {
-        $resources = [];
-
-        foreach ($files as $file) {
-            $resources[] = new Resource($this->config, $type, $file);
-        }
-
-        return $resources;
     }
 
 }

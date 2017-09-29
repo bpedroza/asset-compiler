@@ -24,14 +24,24 @@
  * THE SOFTWARE.
  */
 
-namespace Bpedroza\AssetCompiler\ResourceTypes;
+namespace Bpedroza\AssetCompiler\Assets;
+
+use Bpedroza\AssetCompiler\Assets\BaseAsset;
 
 /**
- * Description of TypeCss
+ * Description of CssAsset
  *
  * @author Bryan Pedroza
  */
-class TypeCss
+class CssAsset extends BaseAsset
 {
-    const TYPE = 'css';
+    /**
+     * Get the css folder path
+     * @return string
+     */
+    public function getTypeFolder()
+    {
+        return $this->config->cssPath();
+    }
+
 }

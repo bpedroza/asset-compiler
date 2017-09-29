@@ -24,39 +24,26 @@
  * THE SOFTWARE.
  */
 
-namespace Bpedroza\AssetCompiler;
+namespace Bpedroza\AssetCompiler\Assets;
 
 use Bpedroza\AssetCompiler\Configuration;
 use Bpedroza\AssetCompiler\Exceptions\UndefinedTypeException;
 use Bpedroza\AssetCompiler\Exceptions\ResourceMissingException;
-use Bpedroza\AssetCompiler\ResourceTypes\TypeCss;
-use Bpedroza\AssetCompiler\ResourceTypes\TypeJs;
 
 /**
- * The resource is a file we will use this class to represent each one 
- * so we can abstract some specific logic out of the main class
+ * The asset is a file we will use this class to represent each one 
+ * so we can abstract some specific logic
  *
  * @author Bryan Pedroza
  */
-class Resource
+abstract class BaseAsset
 {
-
-    /**
-     * An array of types we will allow to be used
-     */
-    const TYPES = [TypeJs::TYPE, TypeCss::TYPE];
 
     /**
      * The configuration object, we will need it to generate file information
      * @var \Bpedroza\AssetCompiler\Configuration 
      */
     protected $config;
-
-    /**
-     * The type of this file. Must exist in Resource::TYPES
-     * @var string 
-     */
-    protected $type;
 
     /**
      * The file name only for this file
@@ -96,16 +83,11 @@ class Resource
 
     /**
      * Setup all the properties for the resource
-     * @param type $file
      * @param Configuration $config
+     * @param string $filename
      */
-    public function __construct(Configuration $config, $type, $filename)
+    public function __construct(Configuration $config, $filename)
     {
-        if (!in_array($type, self::TYPES)) {
-            throw new UndefinedTypeException();
-        }
-
-        $this->type = $type;
         $this->filename = $filename;
         $this->config = $config;
 
@@ -114,6 +96,12 @@ class Resource
         $this->setHttpPath();
         $this->setModTime();
     }
+    
+    /**
+     * Get the sub folder this type of asset lives in
+     * @return string - the folder
+     */
+    public abstract function getTypeFolder();
     
     /**
      * Get the filename of the file
@@ -166,7 +154,7 @@ class Resource
      */
     protected function setRelativePath()
     {
-        $this->relativePath = '/' . $this->config->{$this->type . 'Path'}() . '/' . $this->filename;
+        $this->relativePath = '/' . $this->getTypeFolder() . '/' . $this->filename;
         return $this;
     }
 

@@ -23,15 +23,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+namespace Bpedroza\AssetCompiler\Assets;
 
-namespace Bpedroza\AssetCompiler\ResourceTypes;
+use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
 
 /**
- * Description of TypeCss
+ * Description of CompiledCssAsset
  *
  * @author Bryan Pedroza
  */
-class TypeJs
+class CompiledCssAsset extends BaseCompiledAsset
 {
-    const TYPE = 'js';
+    /**
+     * Get the css folder path
+     * @return string
+     */
+    public function getTypeFolder()
+    {
+        return $this->config->cssPath();
+    }
 }

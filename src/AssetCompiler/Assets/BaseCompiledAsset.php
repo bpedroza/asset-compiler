@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 Bryan.
+ * Copyright 2017 Bryan Pedroza.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,16 @@
  * THE SOFTWARE.
  */
 
-namespace Bpedroza\AssetCompiler;
+namespace Bpedroza\AssetCompiler\Assets;
 
-use Bpedroza\AssetCompiler\Resource;
+use Bpedroza\AssetCompiler\Assets\BaseAsset;
 
 /**
- * Description of CompiledResource
+ * Base class for a compiled asset
  *
- * @author Bryan
+ * @author Bryan Pedroza
  */
-class CompiledResource extends Resource
+abstract class BaseCompiledAsset extends BaseAsset
 {
 
     /**
@@ -59,7 +59,7 @@ class CompiledResource extends Resource
      */
     protected function setFolderPath()
     {
-        $rawFolderPath = $this->config->{$this->type . 'Path'}() . '/' . $this->config->compiledFolder();
+        $rawFolderPath = $this->getTypeFolder() . '/' . $this->config->compiledFolder();
         $this->folderPath = str_replace('//', '/', str_replace('\\', '/', $rawFolderPath));
         $this->createFolders();
         return $this;
