@@ -30,6 +30,7 @@ use Bpedroza\AssetCompiler\AssetTypes\TypeInterface;
 use Bpedroza\AssetCompiler\Assets\JsAsset;
 use Bpedroza\AssetCompiler\Assets\CompiledJsAsset;
 use Bpedroza\AssetCompiler\Configuration;
+use Bpedroza\AssetCompiler\AssetOutputBuilders\JsOutputBuilder;
 
 /**
  * Description of TypeCss
@@ -84,6 +85,11 @@ class TypeJs implements TypeInterface
         }
         
         return $assets;
+    }
+
+    public function getOutputBuilder()
+    {
+        return new JsOutputBuilder();
     }
 
 }

@@ -24,32 +24,28 @@
  * THE SOFTWARE.
  */
 
-namespace Bpedroza\AssetCompiler\AssetTypes;
+namespace Bpedroza\AssetCompiler\AssetOutputBuilders;
+
+use Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder;
+use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
 
 /**
- * Specify the API for Asset Types
+ * Description of JsOutputBuilder
  *
  * @author Bryan Pedroza
  */
-Interface TypeInterface
+class JsOutputBuilder extends BaseOutputBuilder
 {
-    /**
-     * Get a single asset given a filesname
-     * @param type $filename
-     * @return \Bpedroza\AssetCompiler\Assets\BaseAsset
-     */
-    public function getAsset($filename);
+    public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
+    {
+        $this->generateCompiledFileIfNeeded($CA);
+         return '<script src="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '/>';
+    }
+
+    public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
+    {
+        return '<script src="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' />';
+    }
     
-    /**
-     * Get a single compiled asset given a filesname
-     * @param type $filename
-     * @return \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset
-     */
-    public function getCompiledAsset($filename, $filesToCompile);
-    
-    /**
-     * Get a single compiled asset given a filesname
-     * @return \Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder
-     */
-    public function getOutputBuilder();
 }

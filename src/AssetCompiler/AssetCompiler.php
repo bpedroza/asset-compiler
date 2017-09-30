@@ -70,28 +70,27 @@ class AssetCompiler
 
     /**
      * Function to take an js file path relative to public/js and build the script tag for it with cache buster
-     * @param string $file - the file to generate the script tag for
+     * @param string $filename - the file to generate the script tag for
      * @param array $attrs - add attributes to the tag
      * @return string - the script tag for the compiled js file
      */
-    public function getScript($file, $attrs = [])
+    public function getScript($filename, $attrs = [])
     {
         $Type = new TypeJs($this->config);
-        $Resource = $Type->getAsset($file);
-        return '<script src="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' />';
+        return $this->buildSingleFromType($Type, $filename, $attrs);
     }
 
     /**
      * Function to take an js file path relative to public/js and build the script tag for it with cache buster
-     * @param string $file - the file to generate the script tag for
+     * @param string $filename - the file to generate the script tag for
      * @param array $attrs - add attributes to the tag
      * @return string - the script tag for the compiled js file
      */
-    public function getStyle($file, $attrs = [])
+    public function getStyle($filename, $attrs = [])
     {
         $Type = new TypeCss($this->config);
-        $Resource = $Type->getAsset($file);
-        return '<link href="' . $Resource->httpPath() . '?v=' . $Resource->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
+        return $this->buildSingleFromType($Type, $filename, $attrs);
+        
     }
 
     /**
@@ -106,13 +105,7 @@ class AssetCompiler
     public function getScriptsMulti(array $files, string $outFile, $attrs = [])
     {
         $Type = new TypeJs($this->config);
-        if (($debugOutput = $this->getMultiOutputForDebug($files, $Type) ) !== false) {
-            return $debugOutput;
-        }
-
-        $CompiledResource = $this->createCompiledFile($files, $Type, $outFile);
-
-        return '<script src="' . $CompiledResource->httpPath() . '?v=' . $CompiledResource->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '/>';
+        return $this->buildCompiledFromType($Type, $outFile, $files, $attrs);
     }
 
     /**
@@ -126,83 +119,46 @@ class AssetCompiler
      */
     public function getStylesMulti(array $files, string $outFile, $attrs = [])
     {
-        $Type = new TypeCss($this->config);
-        if (($debugOutput = $this->getMultiOutputForDebug($files, $Type) ) !== false) {
-            return $debugOutput;
-        }
-
-        $CompiledResource = $this->createCompiledFile($files, $Type, $outFile);
-
-        return '<link href="' . $CompiledResource->httpPath() . '?v=' . $CompiledResource->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';
+        $Type = new TypeCss($this->config);    
+        return $this->buildCompiledFromType($Type, $outFile, $files, $attrs);
     }
-
+    
     /**
-     * create a compiled file and return the compiled resource
-     * @param array $files
+     * 
      * @param \Bpedroza\AssetCompiler\AssetTypes\TypeInterface $Type
-     * @param string $outFile
-     * @return \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset
+     * @param string $filename - the base file
+     * @param array $attrs - the attributes for the markup
+     * @return string - the output
      */
-    protected function createCompiledFile($files, TypeInterface $Type, $outFile)
+    private function buildSingleFromType($Type, $filename, $attrs)
     {
-        $CompiledAsset = $Type->getCompiledAsset($outFile, $files);
-
-        if ($CompiledAsset->needsToBeReCompiled()) {
-            $this->generateOutFile($CompiledAsset);
+        $Builder = $Type->getOutputBuilder();
+        $Asset = $Type->getAsset($filename);
+        
+        if($this->config->debug()) {
+            return $Builder->buildOutputSingleDebug($Asset, $attrs);
         }
-
-        return $CompiledAsset;
+        
+        return $Builder->buildOutputSingle($Asset, $attrs);
     }
-
+    
     /**
-     * Gets the output for multi call when debug is on
-     * @param array $files
-     * @param \Bpedroza\AssetCompiler\AssetTypes\TypeInterface $type
-     * @return boolean|string
+     * 
+     * @param \Bpedroza\AssetCompiler\AssetTypes\TypeInterface $Type
+     * @param string $compiledFilename - the name of the file that will be compiled
+     * @param array $filesToCompile - names of files to compile
+     * @param array $attrs - the attributes for the markup
+     * @return string - the output
      */
-    protected function getMultiOutputForDebug($files, TypeInterface $Type)
+    private function buildCompiledFromType($Type, $compiledFilename, $filesToCompile, $attrs)
     {
-        if (!$this->config->debug()) {
-            return false;
+        $Builder = $Type->getOutputBuilder();
+        $CompiledAsset = $Type->getCompiledAsset($compiledFilename, $filesToCompile);
+        
+        if($this->config->debug()) {
+            return $Builder->buildOutputCompiledDebug($CompiledAsset, $attrs);
         }
-
-        $output = '';
-        foreach ($files as $file) {
-            $func = $Type instanceof TypeJs ? 'getScript' : 'getStyle';
-            $output .= $this->{$func}($file) . "\n";
-        }
-        return $output;
+        
+        return $Builder->buildOutputCompiled($CompiledAsset, $attrs);
     }
-
-    /**
-     * Method to generate attribute string from an array
-     * @param array $attrs - an array of attributes where key is the attribute name and value is the value
-     * @return string
-     */
-    protected function generateAttributesString($attrs)
-    {
-        if (empty($attrs)) {
-            return '';
-        }
-        $attrString = ' ';
-        foreach ($attrs as $key => $val) {
-            $attrString .= $key . '="' . $val . '" ';
-        }
-
-        return rtrim($attrString);
-    }
-
-    /**
-     * Method to generate the output file
-     * @param \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset $CompiledAsset - the compiled asset object
-     */
-    protected function generateOutFile(BaseCompiledAsset $CompiledAsset)
-    {
-        $separator = "\n" . ';';
-        file_put_contents($CompiledAsset->absolutePath(), '');
-        foreach ($CompiledAsset->getAssets() as $Asset) {
-            file_put_contents($CompiledAsset->absolutePath(), $separator . file_get_contents($Asset->absolutePath()), FILE_APPEND);
-        }
-    }
-
 }

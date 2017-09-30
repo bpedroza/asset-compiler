@@ -117,7 +117,7 @@ class AssetCompilerTest extends TestCase
         $this->assertFileExists($filePath);
 
         $actual = file_get_contents($filePath);
-        $expected = "\n" . ';' . 'body {background:#fff;}' . "\n" . ';' . 'div.full {width:100%;}';
+        $expected = ' body {background:#fff;} div.full {width:100%;}';
 
         $this->assertEquals($expected, $actual);
     }

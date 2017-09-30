@@ -24,32 +24,27 @@
  * THE SOFTWARE.
  */
 
-namespace Bpedroza\AssetCompiler\AssetTypes;
+namespace Bpedroza\AssetCompiler\AssetOutputBuilders;
 
+use Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder;
+use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
 /**
- * Specify the API for Asset Types
+ * Description of CssOutputBuilder
  *
  * @author Bryan Pedroza
  */
-Interface TypeInterface
+class CssOutputBuilder extends BaseOutputBuilder
 {
-    /**
-     * Get a single asset given a filesname
-     * @param type $filename
-     * @return \Bpedroza\AssetCompiler\Assets\BaseAsset
-     */
-    public function getAsset($filename);
-    
-    /**
-     * Get a single compiled asset given a filesname
-     * @param type $filename
-     * @return \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset
-     */
-    public function getCompiledAsset($filename, $filesToCompile);
-    
-    /**
-     * Get a single compiled asset given a filesname
-     * @return \Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder
-     */
-    public function getOutputBuilder();
+    public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
+    {
+        $this->generateCompiledFileIfNeeded($CA, ' ');
+        return '<link href="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';    
+        
+    }
+
+    public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
+    {
+        return '<link href="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
+    }
 }
