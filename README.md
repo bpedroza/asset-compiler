@@ -8,7 +8,8 @@ When using this package for single files, the only benefit gained is cache busti
 
 Files are compiled and cache busted using the last modified time of the newest file. New files are not compiled every page load, only when 
 a file changes in the compilation.
-
+## Installation
+Add `"bpedroza/asset-compiler": "1.0.*"` to your composer.json require array
 ## Configuration
 
 Start by creating a new instance of the `AssetCcompiler` and give it paths it needs to build your files.
