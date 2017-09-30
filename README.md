@@ -32,6 +32,7 @@ All configuration options are getters and setters and can be chained when settin
 $AssetCompiler->config()
         ->cssPath('mycssfolder')
         ->jsPath('myjsfolder');
+
 // As getter
 $compiledFolderName = $AssetCompiler->config()->compiledFolder();
 ```
@@ -64,7 +65,7 @@ $this->AssetCompiler->getScript('test1.js', ['attr1' => 'some value', 'type' => 
 this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], 'mycompiledcssfile.css', $attributes = []);
 
 // Compiled javascript file
-this->AssetCompiler->getStylesMulti(['test1.js', 'test2.js'], 'mycompiledjsfile.js', $attributes = []);
+this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], 'mycompiledjsfile.js', $attributes = []);
 
 ```
 
