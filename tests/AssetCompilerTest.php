@@ -192,7 +192,7 @@ class AssetCompilerTest extends TestCase
     {
         $actual = $this->AssetCompiler->getScript('test1.js');
         $fileTime = filemtime(__DIR__ . '/testresources/js/test1.js');
-        $expected = '<script src="/js/test1.js?v=' . $fileTime . '" />';
+        $expected = '<script src="/js/test1.js?v=' . $fileTime . '" ></script>';
         $this->assertEquals($expected, $actual);
     }
 
@@ -201,7 +201,7 @@ class AssetCompilerTest extends TestCase
         $this->AssetCompiler->config()->jsPath('alternatejsfoldername');
         $actual = $this->AssetCompiler->getScript('test3.js');
         $fileTime = filemtime(__DIR__ . '/testresources/alternatejsfoldername/test3.js');
-        $expected = '<script src="/alternatejsfoldername/test3.js?v=' . $fileTime . '" />';
+        $expected = '<script src="/alternatejsfoldername/test3.js?v=' . $fileTime . '" ></script>';
         $this->assertEquals($expected, $actual);
     }
 
@@ -210,7 +210,7 @@ class AssetCompilerTest extends TestCase
         $this->AssetCompiler->config()->jsPath('/alternatejsfoldername\\');
         $actual = $this->AssetCompiler->getScript('test3.js');
         $fileTime = filemtime(__DIR__ . '/testresources/alternatejsfoldername/test3.js');
-        $expected = '<script src="/alternatejsfoldername/test3.js?v=' . $fileTime . '" />';
+        $expected = '<script src="/alternatejsfoldername/test3.js?v=' . $fileTime . '" ></script>';
         $this->assertEquals($expected, $actual);
     }
 
@@ -224,7 +224,7 @@ class AssetCompilerTest extends TestCase
     {
         $actual = $this->AssetCompiler->getScript('test1.js', ['attr1' => 'some value', 'type' => 'text/javascript']);
         $fileTime = filemtime(__DIR__ . '/testresources/js/test1.js');
-        $expected = '<script src="/js/test1.js?v=' . $fileTime . '" attr1="some value" type="text/javascript" />';
+        $expected = '<script src="/js/test1.js?v=' . $fileTime . '" attr1="some value" type="text/javascript" ></script>';
         $this->assertEquals($expected, $actual);
     }
 
@@ -236,7 +236,7 @@ class AssetCompilerTest extends TestCase
         $fileTime = filemtime($filePath);
 
         $actual = $this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], $compiledName);
-        $expected = '<script src="/js/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" />';
+        $expected = '<script src="/js/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" ></script>';
 
         $this->assertFileExists($this->rootPath . 'js/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
         $this->assertEquals($expected, $actual);
@@ -251,7 +251,7 @@ class AssetCompilerTest extends TestCase
 
         $this->AssetCompiler->config()->compiledFolder('alternateCompiledFolder');
         $actual = $this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], $compiledName);
-        $expected = '<script src="/js/alternateCompiledFolder/' . $compiledName . '?v=' . $fileTime . '" />';
+        $expected = '<script src="/js/alternateCompiledFolder/' . $compiledName . '?v=' . $fileTime . '" ></script>';
 
         $this->assertFileExists($this->rootPath . 'js/alternateCompiledFolder/' . $compiledName);
         $this->assertEquals($expected, $actual);
@@ -266,7 +266,7 @@ class AssetCompilerTest extends TestCase
 
         $this->AssetCompiler->config()->jsPath('alternatejsfoldername');
         $actual = $this->AssetCompiler->getScriptsMulti(['test3.js', 'test4.js'], $compiledName);
-        $expected = '<script src="/alternatejsfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" />';
+        $expected = '<script src="/alternatejsfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" ></script>';
 
         $this->assertFileExists($this->rootPath . 'alternatejsfoldername/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
         $this->assertEquals($expected, $actual);
@@ -303,7 +303,7 @@ class AssetCompilerTest extends TestCase
         $expected = '';
         foreach ($files as $file) {
             $fileTime = filemtime(__DIR__ . '/testresources/js/' . $file);
-            $expected .= '<script src="/js/' . $file . '?v=' . $fileTime . '" />' . "\n";
+            $expected .= '<script src="/js/' . $file . '?v=' . $fileTime . '" ></script>' . "\n";
         }
 
         $this->assertEquals($expected, $actual);

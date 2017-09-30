@@ -40,12 +40,12 @@ class JsOutputBuilder extends BaseOutputBuilder
     public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
     {
         $this->generateCompiledFileIfNeeded($CA);
-         return '<script src="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '/>';
+         return '<script src="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '></script>';
     }
 
     public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
     {
-        return '<script src="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' />';
+        return '<script src="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' ></script>';
     }
     
 }

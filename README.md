@@ -73,9 +73,9 @@ Output
 ```html
 <link href="/css/test1.css?v=123456789" attr1="some value" type="text/css" rel="stylesheet" />
 
-<script src="/js/test1.js?v=123456789" attr1="some value" type="text/javascript" />
+<script src="/js/test1.js?v=123456789" attr1="some value" type="text/javascript" ></script>
 
 <link href="/css/compiled/mycompiledcssfile.css?v=123456789" rel="stylesheet" />
 
-<script src="/js/compiled/mycompiledjsfile.js?v=123456789" />
+<script src="/js/compiled/mycompiledjsfile.js?v=123456789" ></script>
 ```
