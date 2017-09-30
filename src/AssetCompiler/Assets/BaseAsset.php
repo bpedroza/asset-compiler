@@ -27,7 +27,6 @@
 namespace Bpedroza\AssetCompiler\Assets;
 
 use Bpedroza\AssetCompiler\Configuration;
-use Bpedroza\AssetCompiler\Exceptions\UndefinedTypeException;
 use Bpedroza\AssetCompiler\Exceptions\ResourceMissingException;
 
 /**
@@ -102,24 +101,6 @@ abstract class BaseAsset
      * @return string - the folder
      */
     public abstract function getTypeFolder();
-    
-    /**
-     * Get the filename of the file
-     * @return string
-     */
-    public function filename()
-    {
-        return $this->filename;
-    }
-
-    /**
-     * Get the relative path to this file
-     * @return string
-     */
-    public function relativePath()
-    {
-        return $this->relativePath;
-    }
 
     /**
      * Get the absolute path to this file

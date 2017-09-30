@@ -3,6 +3,7 @@
 use PHPUnit\Framework\TestCase;
 use Bpedroza\AssetCompiler\AssetCompiler;
 use Bpedroza\AssetCompiler\Exceptions\ResourceMissingException;
+use Bpedroza\AssetCompiler\Exceptions\DirectoryDoesNotExistException;
 
 class AssetCompilerTest extends TestCase
 {
@@ -23,9 +24,24 @@ class AssetCompilerTest extends TestCase
         $this->removeFolders();
         parent::tearDown();
     }
+    
+    public function test_root_path_exception_when_directory_missing()
+    {
+        $this->expectException(DirectoryDoesNotExistException::class);
+        $this->AssetCompiler->config()->rootPath($this->rootPath . '/afakefolder');
+    }
 
     public function test_get_single_css_file()
     {
+        $actual = $this->AssetCompiler->getStyle('test1.css');
+        $fileTime = filemtime(__DIR__ . '/testresources/css/test1.css');
+        $expected = '<link href="/css/test1.css?v=' . $fileTime . '" rel="stylesheet" />';
+        $this->assertEquals($expected, $actual);
+    }
+    
+    public function test_get_single_css_file_debug()
+    {
+        $this->AssetCompiler->config()->debug(true);
         $actual = $this->AssetCompiler->getStyle('test1.css');
         $fileTime = filemtime(__DIR__ . '/testresources/css/test1.css');
         $expected = '<link href="/css/test1.css?v=' . $fileTime . '" rel="stylesheet" />';
@@ -55,6 +71,14 @@ class AssetCompilerTest extends TestCase
         $this->expectException(ResourceMissingException::class);
         $actual = $this->AssetCompiler->getStyle('test123asd.css');
     }
+    
+    public function test_get_missing_css_ignore_missing()
+    {
+        $this->AssetCompiler->config()->ignoreMissing(true);
+        $actual = $this->AssetCompiler->getStyle('test123asd.css');
+        $expected = '<link href="/css/test123asd.css?v=0" rel="stylesheet" />';
+        $this->assertEquals($expected, $actual);
+    }
 
     public function test_get_single_css_file_with_attributes()
     {
@@ -75,6 +99,24 @@ class AssetCompilerTest extends TestCase
         $expected = '<link href="/css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
 
         $this->assertFileExists($this->rootPath . 'css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
+        $this->assertEquals($expected, $actual);
+    }
+    
+    public function test_get_multi_css_file_does_not_get_recreated()
+    {
+        $compiledName = 'compiledCss.css';
+        $filePath = __DIR__ . '/testresources/css/test1.css';
+        touch($filePath);
+        $fileTime = filemtime($filePath);
+
+        $actual = $this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], $compiledName);
+        $expected = '<link href="/css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName . '?v=' . $fileTime . '" rel="stylesheet" />';
+
+        $this->assertFileExists($this->rootPath . 'css/' . $this->AssetCompiler->config()->compiledFolder() . '/' . $compiledName);
+        $this->assertEquals($expected, $actual);
+        // Sleep a second to make sure time is different
+        sleep(1);
+        $actual = $this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], $compiledName);
         $this->assertEquals($expected, $actual);
     }
 
