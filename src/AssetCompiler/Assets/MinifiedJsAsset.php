@@ -23,29 +23,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+namespace Bpedroza\AssetCompiler\Assets;
 
-namespace Bpedroza\AssetCompiler\AssetOutputBuilders;
-
-use Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder;
-use Bpedroza\AssetCompiler\Assets\BaseAsset;
-use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
+use Bpedroza\AssetCompiler\Assets\BaseMinifiedAsset;
 
 /**
- * Description of JsOutputBuilder
+ * Description of CompiledCssAsset
  *
  * @author Bryan Pedroza
  */
-class JsOutputBuilder extends BaseOutputBuilder
+class MinifiedJsAsset extends BaseMinifiedAsset
 {
-    public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
+    /**
+     * Get the css folder path
+     * @return string
+     */
+    public function getTypeFolder()
     {
-        $this->generateCompiledFileIfNeeded($CA);
-        return '<script src="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '></script>';
+        return $this->config->jsPath();
     }
-
-    public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
-    {
-        return '<script src="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' ></script>';
-    }
-    
 }

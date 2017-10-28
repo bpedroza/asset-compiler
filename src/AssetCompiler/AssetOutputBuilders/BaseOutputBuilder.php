@@ -57,7 +57,7 @@ abstract class BaseOutputBuilder implements OutputBuilderInterface
     }
 
     /**
-     * Method to generate the output file. Very cruse, just glues file contents together.
+     * Method to generate the output file. Very crude, just glues file contents together.
      * @param \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset $CompiledAsset - the compiled asset object
      */
     protected function generateCompiledFileIfNeeded(BaseCompiledAsset $CompiledAsset, $separator = "\n" . ';')

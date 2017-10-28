@@ -43,7 +43,7 @@ class TypeJs implements TypeInterface
      *
      * @var \Bpedroza\AssetCompiler\Configuration 
      */
-    private $config;
+    protected $config;
 
     /**
      * @param \Bpedroza\AssetCompiler\Configuration $config - the configuration object

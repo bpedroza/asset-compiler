@@ -28,9 +28,9 @@ namespace Bpedroza\AssetCompiler;
 
 use Bpedroza\AssetCompiler\Configuration;
 use Bpedroza\AssetCompiler\AssetTypes\TypeCss;
+use Bpedroza\AssetCompiler\AssetTypes\TypeMinifiedCss;
 use Bpedroza\AssetCompiler\AssetTypes\TypeJs;
-use Bpedroza\AssetCompiler\AssetTypes\TypeInterface;
-use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
+use Bpedroza\AssetCompiler\AssetTypes\TypeMinifiedJs;
 
 /**
  * Use this tool to build js and css files compiled as one to avoid having too many assets to load
@@ -61,7 +61,7 @@ class AssetCompiler
 
     /**
      * Return the configuration object
-     * @return Bpedroza\AssetCompiler\Configuration 
+     * @return \Bpedroza\AssetCompiler\Configuration 
      */
     public function config()
     {
@@ -76,7 +76,7 @@ class AssetCompiler
      */
     public function getScript($filename, $attrs = [])
     {
-        $Type = new TypeJs($this->config);
+        $Type = $this->getMini() ? new TypeMinifiedJs($this->config) : new TypeJs($this->config);
         return $this->buildSingleFromType($Type, $filename, $attrs);
     }
 
@@ -88,7 +88,7 @@ class AssetCompiler
      */
     public function getStyle($filename, $attrs = [])
     {
-        $Type = new TypeCss($this->config);
+        $Type = $this->getMini() ? new TypeMinifiedCss($this->config) : new TypeCss($this->config);
         return $this->buildSingleFromType($Type, $filename, $attrs);
         
     }
@@ -104,7 +104,7 @@ class AssetCompiler
      */
     public function getScriptsMulti(array $files, string $outFile, $attrs = [])
     {
-        $Type = new TypeJs($this->config);
+        $Type = $this->getMini() ? new TypeMinifiedJs($this->config) : new TypeJs($this->config);
         return $this->buildCompiledFromType($Type, $outFile, $files, $attrs);
     }
 
@@ -119,8 +119,17 @@ class AssetCompiler
      */
     public function getStylesMulti(array $files, string $outFile, $attrs = [])
     {
-        $Type = new TypeCss($this->config);    
+        $Type = $this->getMini() ? new TypeMinifiedCss($this->config) : new TypeCss($this->config);    
         return $this->buildCompiledFromType($Type, $outFile, $files, $attrs);
+    }
+    
+    /**
+     * Should we get minified types?
+     * @return bool
+     */
+    private function getMini()
+    {
+        return $this->config()->minify() && !$this->config()->debug();
     }
     
     /**

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 Bryan Pedroza.
+ * Copyright 2017 Bryan.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,48 @@
 
 namespace Bpedroza\AssetCompiler\AssetOutputBuilders;
 
-use Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder;
-use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use Bpedroza\AssetCompiler\AssetOutputBuilders\MinifiedOutputBuilder;
 use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
+use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use MatthiasMullie\Minify\JS;
 
 /**
- * Description of JsOutputBuilder
+ * Description of MinifiedCssOutputBuilder
  *
- * @author Bryan Pedroza
+ * @author Bryan
  */
-class JsOutputBuilder extends BaseOutputBuilder
+class MinifiedJsOutputBuilder extends MinifiedOutputBuilder
 {
+    /**
+     * Build html output for a compiled css file
+     * @param \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset $CA - the asset to build from
+     * @param array $attrs - attributes to give to the output
+     * @return string - the html to display
+     */
     public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
     {
-        $this->generateCompiledFileIfNeeded($CA);
-        return '<script src="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '></script>';
+        $this->generateMinifiedCompiledFileIfNeeded($CA);
+        return '<script src="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . '></script>';        
     }
 
+    /**
+     * Build html output for a single css file
+     * @param \Bpedroza\AssetCompiler\Assets\BaseAsset $Asset - the asset to build from
+     * @param array $attrs - attributes to give to the output
+     * @return string - the html to display
+     */
     public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
     {
+        $this->generateMinifiedFileIfNeeded($Asset);
         return '<script src="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' ></script>';
     }
     
+    /**
+     * Get the css minifier
+     * @return \MatthiasMullie\Minify\CSS;
+     */
+    protected function getMinifierInstance()
+    {
+        return new JS();
+    }
 }

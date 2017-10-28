@@ -106,6 +106,15 @@ abstract class BaseAsset
      * Get the absolute path to this file
      * @return string
      */
+    public function filename()
+    {
+        return $this->filename;
+    }
+    
+    /**
+     * Get the absolute path to this file
+     * @return string
+     */
     public function absolutePath()
     {
         return $this->absolutePath;

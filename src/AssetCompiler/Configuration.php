@@ -82,6 +82,12 @@ class Configuration
      * @var bool 
      */
     protected $ignoreMissing = false;
+    
+    /**
+     * Should we use minification
+     * @var bool 
+     */
+    protected $minify = true;
 
     /**
      * Set or get the root path to resources
@@ -156,6 +162,16 @@ class Configuration
     public function ignoreMissing($ignore = null)
     {
         return $this->configValue('ignoreMissing', $ignore);
+    }
+    
+    /**
+     * Set or get config value for minify.
+     * @param bool $minify
+     * @return bool
+     */
+    public function minify($minify = null)
+    {
+        return $this->configValue('minify', $minify);
     }
 
     /**

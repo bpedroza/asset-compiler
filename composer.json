@@ -1,7 +1,7 @@
 {
     "name": "bpedroza/asset-compiler",
     "description": "An asset compiler for php. Compile multiple javascript or css files into a single file.",
-    "keywords": ["asset", "loader", "compiler", "laravel"],
+    "keywords": ["asset", "loader", "compiler", "laravel", "minify", "minification"],
     "license": "MIT",
     "authors": [
         {
@@ -10,7 +10,8 @@
     ],
     "type": "project",
     "require": {
-        "php": ">=5.6.0"
+        "php": ">=5.6.0",
+        "matthiasmullie/minify": "1.3.*"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.7"

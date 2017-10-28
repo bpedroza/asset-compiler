@@ -26,72 +26,34 @@
 
 namespace Bpedroza\AssetCompiler\AssetTypes;
 
-use Bpedroza\AssetCompiler\AssetTypes\TypeInterface;
+use Bpedroza\AssetCompiler\AssetTypes\TypeCss;
+use Bpedroza\AssetCompiler\AssetOutputBuilders\MinifiedCssOutputBuilder;
+use Bpedroza\AssetCompiler\Assets\MinifiedCssAsset;
 use Bpedroza\AssetCompiler\Assets\CssAsset;
-use Bpedroza\AssetCompiler\Assets\CompiledCssAsset;
-use Bpedroza\AssetCompiler\Configuration;
-use Bpedroza\AssetCompiler\AssetOutputBuilders\CssOutputBuilder;
 
 /**
  * Description of TypeCss
  *
  * @author Bryan Pedroza
  */
-class TypeCss implements TypeInterface
+class TypeMinifiedCss extends TypeCss
 {
-
-    /**
-     *
-     * @var \Bpedroza\AssetCompiler\Configuration 
-     */
-    protected $config;
-
-    /**
-     * @param \Bpedroza\AssetCompiler\Configuration $config - the configuration object
-     */
-    public function __construct(Configuration $config)
-    {
-        $this->config = $config;
-    }
-
     /**
      * Given a filename return a new cssasset
      * @param string $filename
-     * @return \Bpedroza\AssetCompiler\Assets\CssAsset
+     * @return \Bpedroza\AssetCompiler\Assets\MinifiedCssAsset
      */
     public function getAsset($filename)
     {
-        return new CssAsset($this->config, $filename);
-    }
-
-    /**
-     * Given a filename return a new compiled cssasset
-     * @param string $filename
-     * @return \Bpedroza\AssetCompiler\Assets\CompiledCssAsset
-     */
-    public function getCompiledAsset($filename, $filesToCompile)
-    {
-        return new CompiledCssAsset($this->config, $filename, $this->getAssetArrayFromFilenames($filesToCompile));
+        return new MinifiedCssAsset($this->config, new CssAsset($this->config, $filename));
     }
     
     /**
-     * Get an array of JsAssets from filenames
-     * @param string[] $filenames
+     * Get the class that will build the html output for this type
+     * @return \Bpedroza\AssetCompiler\AssetOutputBuilders\MinifiedCssOutputBuilder
      */
-    protected function getAssetArrayFromFilenames($filenames)
-    {
-        $assets = [];
-        foreach($filenames as $filename) {
-            $assets[] = $this->getAsset($filename);
-        }
-        
-        return $assets;
-    }
-
-
     public function getOutputBuilder()
     {
-        return new CssOutputBuilder();
+        return new MinifiedCssOutputBuilder();
     }
-
 }

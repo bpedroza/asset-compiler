@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 Bryan Pedroza.
+ * Copyright 2017 Bryan.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,17 @@
 
 namespace Bpedroza\AssetCompiler\AssetOutputBuilders;
 
-use Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder;
-use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use Bpedroza\AssetCompiler\AssetOutputBuilders\MinifiedOutputBuilder;
 use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
+use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use MatthiasMullie\Minify\CSS;
+
 /**
- * Description of CssOutputBuilder
+ * Description of MinifiedCssOutputBuilder
  *
- * @author Bryan Pedroza
+ * @author Bryan
  */
-class CssOutputBuilder extends BaseOutputBuilder
+class MinifiedCssOutputBuilder extends MinifiedOutputBuilder
 {
     /**
      * Build html output for a compiled css file
@@ -44,7 +46,7 @@ class CssOutputBuilder extends BaseOutputBuilder
      */
     public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
     {
-        $this->generateCompiledFileIfNeeded($CA, ' ');
+        $this->generateMinifiedCompiledFileIfNeeded($CA);
         return '<link href="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';    
         
     }
@@ -57,6 +59,16 @@ class CssOutputBuilder extends BaseOutputBuilder
      */
     public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
     {
+        $this->generateMinifiedFileIfNeeded($Asset);
         return '<link href="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
+    }
+    
+    /**
+     * Get the css minifier
+     * @return \MatthiasMullie\Minify\CSS;
+     */
+    protected function getMinifierInstance()
+    {
+        return new CSS();
     }
 }

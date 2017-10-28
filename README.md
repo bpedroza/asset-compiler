@@ -1,12 +1,11 @@
 # Asset Compiler
-This package will allow you to compile multiple assets into a single file. Currently supported types are css and javascript.
+This package will allow you to compile multiple assets into a single file and minify single or compiled assets. Currently supported types are css and javascript.
 
 
 An additional benefit to this package is that is adds a cache buster. 
-When using this package for single files, the only benefit gained is cache busting.
 
 
-Files are compiled and cache busted using the last modified time of the newest file. New files are not compiled every page load, only when 
+Files are compiled, minified, and cache busted using the last modified time of the newest file. New files are not compiled every page load, only when 
 a file changes in the compilation.
 
 ## Configuration
@@ -46,8 +45,9 @@ $compiledFolderName = $AssetCompiler->config()->compiledFolder();
 | cssPath     | Path relative to root path where your css files live | `'css'` |
 | jsPath      | Path relative to root path where your javascript files live     |   `'js'` |
 | compiledFolder | Name of folder that will be created in both js and css folders for compiled files      |    `'compiled'` |
-| debug | When in debug, we won't compile items to make it easier to debug.     |    `false` |
+| debug | When in debug, we won't compile or minify items to make it easier to debug.     |    `false` |
 | ignoreMissing | When true, we won't throw exceptions for missing files.      |    `false` |
+| minify | When true, we will minify file contents.      |    `true` |
 
 ## Usage
 
@@ -56,16 +56,16 @@ Generate single, cache busted, files.
 
 ```php
 // Single css file
-$this->AssetCompiler->getStyle('test1.css', ['attr1' => 'some value', 'type' => 'text/css']);
+$AssetCompiler->getStyle('test1.css', ['attr1' => 'some value', 'type' => 'text/css']);
 
 // Single js file
-$this->AssetCompiler->getScript('test1.js', ['attr1' => 'some value', 'type' => 'text/javascript']);
+$AssetCompiler->getScript('test1.js', ['attr1' => 'some value', 'type' => 'text/javascript']);
 
 // Compiled css file
-this->AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], 'mycompiledcssfile.css', $attributes = []);
+$AssetCompiler->getStylesMulti(['test1.css', 'test2.css'], 'mycompiledcssfile.css', $attributes = []);
 
 // Compiled javascript file
-this->AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], 'mycompiledjsfile.js', $attributes = []);
+$AssetCompiler->getScriptsMulti(['test1.js', 'test2.js'], 'mycompiledjsfile.js', $attributes = []);
 
 ```
 
@@ -74,6 +74,17 @@ Output
 <link href="/css/test1.css?v=123456789" attr1="some value" type="text/css" rel="stylesheet" />
 
 <script src="/js/test1.js?v=123456789" attr1="some value" type="text/javascript" ></script>
+
+<link href="/css/compiled/mycompiledcssfile.css?v=123456789" rel="stylesheet" />
+
+<script src="/js/compiled/mycompiledjsfile.js?v=123456789" ></script>
+```
+
+Minified Output
+```html
+<link href="/css/compiled/test1.min.css?v=123456789" attr1="some value" type="text/css" rel="stylesheet" />
+
+<script src="/js/compiled/test1.min.js?v=123456789" attr1="some value" type="text/javascript" ></script>
 
 <link href="/css/compiled/mycompiledcssfile.css?v=123456789" rel="stylesheet" />
 

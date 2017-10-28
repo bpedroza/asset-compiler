@@ -27,36 +27,47 @@
 namespace Bpedroza\AssetCompiler\AssetOutputBuilders;
 
 use Bpedroza\AssetCompiler\AssetOutputBuilders\BaseOutputBuilder;
-use Bpedroza\AssetCompiler\Assets\BaseAsset;
+use Bpedroza\AssetCompiler\Assets\BaseMinifiedAsset;
 use Bpedroza\AssetCompiler\Assets\BaseCompiledAsset;
+
 /**
- * Description of CssOutputBuilder
+ * Base output builder for minified files
  *
  * @author Bryan Pedroza
  */
-class CssOutputBuilder extends BaseOutputBuilder
+abstract class MinifiedOutputBuilder extends BaseOutputBuilder
 {
     /**
-     * Build html output for a compiled css file
-     * @param \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset $CA - the asset to build from
-     * @param array $attrs - attributes to give to the output
-     * @return string - the html to display
+     * Method to generate the output file. Very cruse, just glues file contents together.
+     * @param \Bpedroza\AssetCompiler\Assets\BaseCompiledAsset $CompiledAsset - the compiled asset object
      */
-    public function buildOutputCompiled(BaseCompiledAsset $CA, $attrs = [])
+    protected function generateMinifiedCompiledFileIfNeeded(BaseCompiledAsset $CompiledAsset)
     {
-        $this->generateCompiledFileIfNeeded($CA, ' ');
-        return '<link href="' . $CA->httpPath() . '?v=' . $CA->getLastModTimeOfNewestAsset() . '" ' . $this->generateAttributesString($attrs) . 'rel="stylesheet" />';    
-        
+        $Minifier = $this->getMinifierInstance();
+        if ($CompiledAsset->needsToBeReCompiled()) {
+            foreach ($CompiledAsset->getAssets() as $Asset) {
+                $Minifier->add($Asset->originalAsset()->absolutePath());
+            }
+            $Minifier->minify($CompiledAsset->absolutePath());
+        }
     }
-
+    
     /**
-     * Build html output for a single css file
-     * @param \Bpedroza\AssetCompiler\Assets\BaseAsset $Asset - the asset to build from
-     * @param array $attrs - attributes to give to the output
-     * @return string - the html to display
+     * Method to generate the minified file.
+     * @param \Bpedroza\AssetCompiler\Assets\BaseMinifiedAsset $Asset - the minified asset object
      */
-    public function buildOutputSingle(BaseAsset $Asset, $attrs = [])
+    protected function generateMinifiedFileIfNeeded(BaseMinifiedAsset $Asset)
     {
-        return '<link href="' . $Asset->httpPath() . '?v=' . $Asset->modTime() . '"' . $this->generateAttributesString($attrs) . ' rel="stylesheet" />';
+        if ($Asset->needsToBeRecompiled()) {
+            $Minifier = $this->getMinifierInstance();
+            $Minifier->add($Asset->originalAsset()->absolutePath());
+            $Minifier->minify($Asset->absolutePath());
+        }
     }
+    
+    /**
+     * Get the minifier for this type
+     * @return \MatthiasMullie\Minify\Minify;
+     */
+    abstract protected function getMinifierInstance();
 }
