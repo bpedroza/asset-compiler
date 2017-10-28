@@ -7,6 +7,8 @@ An additional benefit to this package is that is adds a cache buster.
 
 Files are compiled, minified, and cache busted using the last modified time of the newest file. New files are not compiled every page load, only when 
 a file changes in the compilation.
+## Installation
+Add `"bpedroza/asset-compiler": "1.1.*"` to your composer.json require array
 
 ## Configuration
 
